@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Webmention Sender</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; }
+  label, input, button { display: block; width: 100%; margin-bottom: 1em; font-size: 1.2em; }
+  input { padding: 0.5em; }
+  button { padding: 0.7em; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>Webmention Sender</h1>
+
+<label for="articleUrl">Artikel-URL:</label>
+<input type="url" id="articleUrl" placeholder="https://piehnat.de/post/dein-artikel" required />
+
+<button id="sendBtn">Webmentions senden</button>
+
+<script>
+  const scriptBaseUrl = "https://piehnat.de/send-webmentions.php";
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    const articleUrl = document.getElementById('articleUrl').value.trim();
+    if (!articleUrl) {
+      alert('Bitte die Artikel-URL ausfüllen!');
+      return;
+    }
+    const encodedUrl = encodeURIComponent(articleUrl);
+    const fullUrl = `${scriptBaseUrl}?source=${encodedUrl}`;
+    window.open(fullUrl, '_blank');
+  });
+</script>
+
+</body>
+</html>
