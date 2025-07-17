@@ -1,11 +1,19 @@
 <?php
-// Einfaches PHP-Webmention-Sender-Skript mit Passwortschutz und cURL
+// Einfaches PHP-Webmention-Sender-Skript mit Passwortschutz, cURL, Delay & IP-Logging
 
 // 🔐 Passwortschutz aktivieren
 $authKey = 'mein-geheimer-code'; // <- Hier dein Passwort reinschreiben
 if (!isset($_GET['auth']) || $_GET['auth'] !== $authKey) {
+    // Zugriff loggen
+    file_put_contents('webmention-log.txt', date('Y-m-d H:i:s') . " - FAILED access from IP: " . $_SERVER['REMOTE_ADDR'] . "\n", FILE_APPEND);
     die('Unauthorized access');
 }
+
+// ✅ Erfolgreichen Zugriff loggen
+file_put_contents('webmention-log.txt', date('Y-m-d H:i:s') . " - Access from IP: " . $_SERVER['REMOTE_ADDR'] . "\n", FILE_APPEND);
+
+// 🕒 Anti-Brute-Force: kleine Verzögerung
+sleep(2);
 
 if (!isset($_GET['source']) || empty($_GET['source'])) {
     die('Bitte die Quelle als URL-Parameter "source" angeben.');
@@ -46,7 +54,6 @@ echo "<h3>Gefundene Links:</h3><ul>";
 
 // Hilfsfunktion: Webmention-Endpunkt finden (mit cURL)
 function find_webmention_endpoint($url) {
-    // HTTP Header via cURL abfragen
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
@@ -59,12 +66,10 @@ function find_webmention_endpoint($url) {
 
     if (!$headers) return false;
 
-    // Header nach Link-Rel suchen
     if (preg_match_all('/Link:\s*<([^>]+)>;\s*rel="?webmention"?/i', $headers, $matches)) {
         return $matches[1][0];
     }
 
-    // Wenn nicht im Header, dann Seite per cURL laden und nach <link rel="webmention"> suchen
     $html = curl_get_contents($url);
     if ($html && preg_match('/<link[^>]+rel=["\']?webmention["\']?[^>]*href=["\']?([^"\']+)["\']?/i', $html, $m)) {
         return $m[1];
@@ -73,7 +78,7 @@ function find_webmention_endpoint($url) {
     return false;
 }
 
-// Hilfsfunktion: Webmention senden (bleibt unverändert)
+// Hilfsfunktion: Webmention senden
 function send_webmention($source, $target, $endpoint) {
     $data = http_build_query([
         'source' => $source,
