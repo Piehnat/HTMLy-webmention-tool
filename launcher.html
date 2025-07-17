@@ -17,6 +17,9 @@
 <label for="articleUrl">Artikel-URL:</label>
 <input type="url" id="articleUrl" placeholder="https://piehnat.de/post/dein-artikel" required />
 
+<label for="authCode">Auth-Code:</label>
+<input type="password" id="authCode" placeholder="Dein geheimer Code" required />
+
 <button id="sendBtn">Webmentions senden</button>
 
 <script>
@@ -24,12 +27,18 @@
 
   document.getElementById('sendBtn').addEventListener('click', () => {
     const articleUrl = document.getElementById('articleUrl').value.trim();
+    const authCode = document.getElementById('authCode').value.trim();
     if (!articleUrl) {
       alert('Bitte die Artikel-URL ausfüllen!');
       return;
     }
+    if (!authCode) {
+      alert('Bitte den Auth-Code ausfüllen!');
+      return;
+    }
     const encodedUrl = encodeURIComponent(articleUrl);
-    const fullUrl = `${scriptBaseUrl}?source=${encodedUrl}`;
+    const encodedAuth = encodeURIComponent(authCode);
+    const fullUrl = `${scriptBaseUrl}?source=${encodedUrl}&auth=${encodedAuth}`;
     window.open(fullUrl, '_blank');
   });
 </script>
